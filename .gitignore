@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+data/**/*.csv
+!data/sample.csv
+.vscode/
+scripts/**/*.xlsx
+NetworkEngin.session.sql
+extract_m_values.py

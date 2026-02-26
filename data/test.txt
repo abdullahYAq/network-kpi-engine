@@ -1,0 +1,5 @@
+This is a sample text file with some M values.
+Here is (M123) and another (Mabc).
+Also, (M456) in the middle.
+And some other text without parentheses.
+(Mtest) at the end.
