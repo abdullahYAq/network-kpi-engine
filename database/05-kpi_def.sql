@@ -3,7 +3,7 @@ CREATE TABLE kpi.kpi_def (
     kpi_name TEXT NOT NULL,
     kpi_description TEXT,
     source_type TEXT NOT NULL
-         CHECK (source_type IN ('counter', 'system')),
+         CHECK (source_type IN ('formula', 'system')),
     technology_id INTEGER NOT NULL,
     UNIQUE (kpi_name, technology_id),
     FOREIGN KEY (technology_id) REFERENCES kpi.technology(id)
