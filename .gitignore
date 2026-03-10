@@ -10,3 +10,4 @@ data/**/*.csv
 scripts/**/*.xlsx
 NetworkEngin.session.sql
 extract_m_values.py
+scripts/
