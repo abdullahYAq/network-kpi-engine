@@ -10,4 +10,7 @@ data/**/*.csv
 scripts/**/*.xlsx
 NetworkEngin.session.sql
 extract_m_values.py
-testScripts/
+tests/
+.venv/
+KPIV2.session.sql
+NetworkEngin.session.sql
