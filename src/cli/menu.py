@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog
 import questionary
+from src.ingestion.counters_def_ingestion import detect_counters_flow, import_template_flow
+from src.export.counters_template_export import download_template_flow
+
 def user_selections():
     """
     prompt user for choose functions of the program 
@@ -19,7 +22,8 @@ def user_selections():
                 "Ingest KPI and counters values",
                 "define new counter and ingest it in DB",
                 "define new KPI and ingest it in DB",
-                "INSERT New Technology"
+                "INSERT New Technology",
+                "Exit"
             ]).ask()
     return selected
 def open_file(path):
@@ -36,6 +40,15 @@ def choose_xml_file():
         print("No XML file selected. Exiting.")
         exit()
     return xml_path
+def choose_csv_file():
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    root.attributes("-topmost", True)
+    csv_file_path = filedialog.askopenfilename(title="Select CSV File", filetypes=[("CSVL Files", "*.csv")])
+    if not csv_file_path:
+        print("No CSV file selected. Exiting.")
+        return "No file selected"
+    return csv_file_path
 def select_classes_ui(classes):
     """
     Prompt user to select classes from a list.
@@ -119,3 +132,28 @@ def filter_classes_by_keywords(classes, keywords):
             filtered.append(c)
 
     return filtered
+def counter_def_sub_menu():
+    selected = questionary.select(
+            "Choose a function to perform:",
+            choices=[
+                "Detect counters from CSV",
+                "Download counters template",
+                "Import counters from template",
+                "Back"
+            ]).ask()
+    return selected
+def handle_counters_definition():
+    while True:
+        choice = counter_def_sub_menu()
+
+        if choice == "Detect counters from CSV":
+            detect_counters_flow()
+
+        elif choice == "Download counters template":
+            download_template_flow()
+
+        elif choice == "Import counters from template":
+            import_template_flow()
+
+        elif choice == "Back":
+            break
