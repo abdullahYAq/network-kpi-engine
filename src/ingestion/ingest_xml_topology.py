@@ -11,7 +11,7 @@ def ingest_xml_topology(xml_path):
     cells_rows=[]
     sites_dict={}
     seen_lncel = set()
-    duplicate_lncel = {}
+    duplicate_lncel = {}  
     for obj in extract_selected_objects_stream(xml_path,selected_classes,obj_p):
         if obj["class"] == "MRBTS":
             mrbts= int(obj["MRBTS"])

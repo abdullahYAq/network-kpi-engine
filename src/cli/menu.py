@@ -3,6 +3,8 @@ from tkinter import filedialog
 import questionary
 from src.ingestion.counters_def_ingestion import detect_counters_flow, import_template_flow
 from src.export.counters_template_export import download_template_flow
+from src.db.technology_repository import insert_technology
+from src.config.db_config import db_config
 
 def user_selections():
     """
@@ -38,7 +40,6 @@ def choose_xml_file():
     xml_path = filedialog.askopenfilename(title="Select XML File", filetypes=[("XML Files", "*.xml")])
     if not xml_path:
         print("No XML file selected. Exiting.")
-        exit()
     return xml_path
 def choose_csv_file():
     root = tk.Tk()
@@ -151,9 +152,15 @@ def handle_counters_definition():
 
         elif choice == "Download counters template":
             download_template_flow()
-
         elif choice == "Import counters from template":
             import_template_flow()
-
         elif choice == "Back":
             break
+def handle_tech_ingest():
+    tech_name = questionary.text("Enter technology name: ").ask()
+    tech_priority = questionary.text("Enter technology priority: ").ask()
+    if not tech_priority or not tech_priority.isdigit():
+        print("Invalid priority. Returning to menu.")
+        return None
+    tech_priority = int(tech_priority)
+    insert_technology(db_config,tech_name,tech_priority)
