@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
 import questionary
-from src.ingestion.counters_def_ingestion import detect_counters_flow, import_template_flow
-from src.export.counters_template_export import download_template_flow
 from src.db.technology_repository import insert_technology
 from src.config.db_config import db_config
 
@@ -50,6 +48,25 @@ def choose_csv_file():
         print("No CSV file selected. Exiting.")
         return "No file selected"
     return csv_file_path
+def choose_excel_file():
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    root.attributes("-topmost", True)
+    excel_file_path = filedialog.askopenfilename(title="Select excel File", filetypes=[("excel Files", "*.xlsx")])
+    if not excel_file_path:
+        print("No excel file selected. Exiting.")
+        return "No file selected"
+    return excel_file_path
+def choose_excel_save_path():
+    while True:
+        excel_path = filedialog.asksaveasfilename(title="Save Excel File", defaultextension=".xlsx", filetypes=[("Excel Files", "*.xlsx")])
+        if not excel_path:
+            ask_cont=questionary.confirm("Do you want to continue choose file?").ask()
+            if ask_cont:
+                continue
+            else:
+                return None
+        return excel_path
 def select_classes_ui(classes):
     """
     Prompt user to select classes from a list.
@@ -143,19 +160,6 @@ def counter_def_sub_menu():
                 "Back"
             ]).ask()
     return selected
-def handle_counters_definition():
-    while True:
-        choice = counter_def_sub_menu()
-
-        if choice == "Detect counters from CSV":
-            detect_counters_flow()
-
-        elif choice == "Download counters template":
-            download_template_flow()
-        elif choice == "Import counters from template":
-            import_template_flow()
-        elif choice == "Back":
-            break
 def handle_tech_ingest():
     tech_name = questionary.text("Enter technology name: ").ask()
     tech_priority = questionary.text("Enter technology priority: ").ask()

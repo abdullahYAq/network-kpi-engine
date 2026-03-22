@@ -10,16 +10,6 @@ def ingest_sites_to_db(db_config, sites_rows):
             for row in sites_rows
             if "lnbts" in row
         ]
-        #Test sites
-        """for mrbt in sites_tuple:
-            if mrbt[0] in sites_without_lnbts:
-                print("confilicted is there")
-                break
-        print(f"{len(sites_without_lnbts)} sites without LNBT")
-        print(sites_without_lnbts)
-        print("sites parsed:", len(sites_tuple))
-        print(sites_tuple[:4])"""
-
         with connect(**db_config) as conn:
             with conn.cursor() as cur:
                 sql = """INSERT INTO kpi.sites 

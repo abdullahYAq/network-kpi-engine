@@ -15,3 +15,22 @@ def insert_technology(db_config, technology_name, tech_priority):
     except Exception as e:
         print(f"Error inserting technology: {e}")
         return None
+def get_tech_from_db(db_config):
+    try:
+        with connect(**db_config) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT tech_name FROM kpi.technology")
+                result = cur.fetchall()
+                print(result)
+                tech_values = []
+                if result is not None:
+                    for res in result:
+                        tech_values.append(res[0])
+                    tech_values_str = ','.join(tech_values)    
+                    return tech_values_str
+                else:
+                    print(f"No Technology exists.")
+                    return None
+    except Exception as e:
+        print(f"Error getting technology: {e}")
+        return None
