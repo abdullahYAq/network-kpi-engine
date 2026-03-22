@@ -156,7 +156,7 @@ def counter_def_sub_menu():
             choices=[
                 "Detect counters from CSV",
                 "Download counters template",
-                "Import counters from template",
+                "Upload counters from template",
                 "Back"
             ]).ask()
     return selected

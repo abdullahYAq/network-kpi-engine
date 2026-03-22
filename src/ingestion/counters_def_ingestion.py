@@ -11,15 +11,11 @@ def detect_counters_flow(csv_path):
     if not counters_dict:
         return None
     db_counters_codes = get_all_counter_codes(db_config) 
-        #header_name = ["counter_name","counter_code","counter_description", "unit", "tech_name"]
     new_counters_rows = filter_new_counters(db_counters_codes,counters_dict)
     if not new_counters_rows:
         return None
     tech_values = get_tech_from_db(db_config)
-            #excel_path = choose_excel_save_path()
-            #excel_path = generate_counters_template(header_name,new_counters_rows,tech_values,excel_path)
     return new_counters_rows, tech_values
-        
 def handle_counters_template_upload(excel_path):
     db_counters_codes = get_all_counter_codes(db_config)
     excel_df = pd.read_excel(excel_path,sheet_name="New Counters Insertion")
@@ -27,8 +23,9 @@ def handle_counters_template_upload(excel_path):
     if not errors_df.empty:
         write_errors_report(excel_path, errors_df, warnings_df)
         return
-    insert_counters_to_db(excel_path,db_config)
+    counters_number = insert_counters_to_db(excel_df,db_config)
     write_success_report(excel_path, warnings_df)
+    print(f"{counters_number} counters inserted to DB")
 def filter_new_counters(db_counters_codes,counters_dict):
     codes_set = {row[0] for row in db_counters_codes}
     new_counters= {

@@ -25,7 +25,7 @@ def generate_counters_template(header_name,rows,tech_values,excel_path):
             sheet_counters_opxl.add_data_validation(validation_tech)
             validation_tech.add(f"E2:E{rows_num}")
             workbook.save(excel_path)
-            os.startfile(excel_path)
+            #os.startfile(excel_path)
             return excel_path
     except Exception as e:
         raise       
@@ -35,7 +35,7 @@ def write_errors_report(excel_path, errors_df, warnings_df):
         all_errors_df.to_excel(writer,sheet_name="Validation Report",index=False)
 def write_success_report(excel_path, warnings_df):
     success_row = [(0,"-","Data Uploded successfully","SUCCESS")]
-    success_df = pd.DataFrame(success_row,columns=["row_number","column", "message","type"])
+    success_df = pd.DataFrame(success_row,columns=["row_num","column", "message","type"])
     succes_ans_warning = pd.concat([success_df,warnings_df],ignore_index=True)
     with pd.ExcelWriter(excel_path,engine="openpyxl",mode="a",if_sheet_exists="replace") as writer:
         succes_ans_warning.to_excel(writer,sheet_name="Validation Report",index=False) 

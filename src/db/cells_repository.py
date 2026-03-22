@@ -20,4 +20,5 @@ def ingest_cells_to_db(db_config,cells_rows):
                 print("cells skipped", len(cells_tuple)-inserted_count)
                 print("example cells:", cells_tuple[:3])
     except Exception as e:
-        print(e)
+        
+        raise e

@@ -53,7 +53,7 @@ def validate_counters_template(excel_df,db_counters_codes):
         (i+2, "counter_code", "already exists in DB", "Warning")
         for i in duplicate_code_index
     )
-    errors_df = pd.DataFrame(errors,columns=["row_numer","coulumn", "message","type"])
+    errors_df = pd.DataFrame(errors,columns=["row_number","column", "message","type"])
     warning_df=pd.DataFrame(warning_error,columns=["row_number","column", "message","type"])
     #excel_df = pd.DataFrame()
     return errors_df,warning_df
