@@ -160,6 +160,24 @@ def counter_def_sub_menu():
                 "Back"
             ]).ask()
     return selected
+def counters_kpi_value_sub_menu():
+    selected = questionary.select(
+            "Choose a function to perform:",
+            choices=[
+                "Insert CSV raw counters hourly values",
+                "Insert KPIs hourly values",
+                "Back"
+            ]).ask()
+    return selected
+def missing_cells_insert_sub_menu():
+    selected = questionary.select(
+            "Choose a function to perform:",
+            choices=[
+                "Insert missing cells to DB",
+                "continue without inserting",
+                "Back"
+            ]).ask()
+    return selected
 def handle_tech_ingest():
     tech_name = questionary.text("Enter technology name: ").ask()
     tech_priority = questionary.text("Enter technology priority: ").ask()

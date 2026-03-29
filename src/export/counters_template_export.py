@@ -2,8 +2,6 @@ import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
 import os
-def download_template_flow():
-    pass
 def generate_counters_template(header_name,rows,tech_values,excel_path):
     try:
         if not rows:
@@ -39,3 +37,7 @@ def write_success_report(excel_path, warnings_df):
     succes_ans_warning = pd.concat([success_df,warnings_df],ignore_index=True)
     with pd.ExcelWriter(excel_path,engine="openpyxl",mode="a",if_sheet_exists="replace") as writer:
         succes_ans_warning.to_excel(writer,sheet_name="Validation Report",index=False) 
+def create_empty_counters_template(excel_path,header_name):
+    counters_sheet_name = "New Counters Insertion"
+    counters_excel_data = pd.DataFrame(data=[],columns=header_name)
+    counters_excel_data.to_excel(excel_path,sheet_name=counters_sheet_name,index=False)

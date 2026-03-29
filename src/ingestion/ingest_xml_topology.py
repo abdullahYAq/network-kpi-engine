@@ -40,18 +40,18 @@ def ingest_xml_topology(xml_path):
             lncel=int(obj["LNCEL"])
             if lncel in seen_lncel:
                 duplicate_lncel.setdefault(lncel, []).append(obj)
-                continue
+                #continue
             seen_lncel.add(lncel)
             cell_mrbts=int(obj["MRBTS"])
             lncel_name = obj["name"]
             cell_distname = obj["distName"]
             
-            if not is_cell_site_consistent(lncel_name,cell_mrbts):
-                if lncel not in conflicted_cell_site:
-                    conflicted_cell_site[lncel]=[{"mrbts":cell_mrbts,"name":lncel_name}]
-                else:
-                    conflicted_cell_site[lncel].append({"mrbts":cell_mrbts,"name":lncel_name})
-                continue
+            #if not is_cell_site_consistent(lncel_name,cell_mrbts):
+                #if lncel not in conflicted_cell_site:
+                    #conflicted_cell_site[lncel]=[{"mrbts":cell_mrbts,"name":lncel_name}]
+                #else:
+                    #conflicted_cell_site[lncel].append({"mrbts":cell_mrbts,"name":lncel_name})
+                #continue'''
             cell_data = {
                 "lncel":lncel,
                 "lncel_name":lncel_name,

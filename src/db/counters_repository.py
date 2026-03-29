@@ -1,5 +1,25 @@
 from psycopg2 import connect, extras
-import pandas as pd
+
+def get_counter_id_counter_code_map(db_config):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT counter_code ,id
+                FROM kpi.counters_def
+            ''' 
+            cur.execute(sql)
+            codes_id_db = cur.fetchall()
+            if not codes_id_db:
+                raise ValueError("No counters found in DB")
+            codes = [i[0] for i in codes_id_db]
+
+            if len(codes) != len(set(codes)):
+                raise ValueError("Duplicate counter_code detected in DB")
+            counters_map = {
+                i[0].strip().upper() : i[1]
+                for i in codes_id_db
+            }
+            return counters_map
 def get_all_counter_codes(db_config):
     with connect(**db_config) as conn:
         with conn.cursor() as cur:

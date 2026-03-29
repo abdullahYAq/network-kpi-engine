@@ -4,7 +4,6 @@ from src.export.counters_template_export import generate_counters_template, writ
 from src.config.db_config import db_config
 import pandas as pd
 from src.parsers.counters_csv_parser import extract_counters_from_csv_header
-from src.cli.menu import choose_excel_save_path
 from src.validation.counters_validations import validate_counters_template
 def detect_counters_flow(csv_path):
     counters_dict = extract_counters_from_csv_header(csv_path)
