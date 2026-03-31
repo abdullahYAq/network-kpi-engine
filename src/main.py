@@ -50,10 +50,11 @@ def main():
                                 break
                     else:
                         print("All cells are mapped successfully!")
-                        #ingest_counters_values(mapped_df)
-
+                        ingest_counters_values(mapped_df)
+                        break
                 elif choice == "Insert KPIs hourly values":
-                    pass
+                    print("This function is not implemented yet.")
+                    continue
                 elif choice == "Back":
                     break
         elif user_selection == "define new counter and ingest it in DB":

@@ -100,7 +100,8 @@ def select_classes_ui(classes):
                 "search again",
                 "show selected",
                 "remove from selection",
-                "confirm selection"
+                "confirm selection",
+                 "Exit"
             ]).ask()
         if action == "search again":
             continue
@@ -132,6 +133,8 @@ def select_classes_ui(classes):
             confirm = questionary.confirm(f"Confirm selection of {len(selected_classes)} classes?").ask()
             if confirm:
                 return sorted(selected_classes)
+        elif action == "Exit":
+            break
 def filter_classes_by_keywords(classes, keywords):
     """
     Filter classes by keywords (case-insensitive).
