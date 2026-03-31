@@ -126,6 +126,8 @@ N --> O[KPI Calculation - Future]
 
 Run the pipeline:
 
-```bash
+Basic usage:
 python main.py
-```
+
+Advanced (module-based):
+python -m src.main
