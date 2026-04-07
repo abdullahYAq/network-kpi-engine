@@ -1,7 +1,7 @@
 import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
-import os
+
 def generate_counters_template(header_name,rows,tech_values,excel_path):
     try:
         if not rows:
@@ -33,7 +33,7 @@ def write_errors_report(excel_path, errors_df, warnings_df):
         all_errors_df.to_excel(writer,sheet_name="Validation Report",index=False)
 def write_success_report(excel_path, warnings_df):
     success_row = [(0,"-","Data Uploded successfully","SUCCESS")]
-    success_df = pd.DataFrame(success_row,columns=["row_num","column", "message","type"])
+    success_df = pd.DataFrame(success_row,columns=["row_number","column", "message","type"])
     succes_ans_warning = pd.concat([success_df,warnings_df],ignore_index=True)
     with pd.ExcelWriter(excel_path,engine="openpyxl",mode="a",if_sheet_exists="replace") as writer:
         succes_ans_warning.to_excel(writer,sheet_name="Validation Report",index=False) 

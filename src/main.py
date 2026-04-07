@@ -1,12 +1,14 @@
-from src.cli.menu import user_selections, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu
+from src.cli.menu import user_selections, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu
 from src.ingestion.ingest_xml_topology import ingest_xml_topology
 from tkinter import filedialog
 import questionary
 from src.parsers.xml_parser import extract_classes,extract_selected_objects
 from src.export.xml_dump_excel_export import write_to_excel
 from src.export.counters_template_export import generate_counters_template ,create_empty_counters_template
+from src.export.kpi_template_export import create_empty_kpi_template
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
 from src.ingestion.counters_value_ingestion import ingest_counters_values, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
+from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
 from src.utils.distname_utils import distName_to_dict
 def main():
     while True:
@@ -106,7 +108,37 @@ def main():
                 elif choice == "Back":
                     break
         elif user_selection == "define new KPI and ingest it in DB":
-            print("This function is not implemented yet.")            
+            while True:
+                choice = kpi_def_sub_menu()
+                if choice == "Generate excel template for KPI definition":
+                    header_name = ["kpi_name","kpi_type","numerator (ratio only)","denominator (ratio only)","expression (expression only)","multiplier","description","tech_name"]
+                    excel_path = choose_excel_save_path()
+                    if not excel_path:
+                        print("You did not choose path for the new template!")
+                        continue
+                    create_empty_kpi_template(excel_path,header_name)
+                    print("Template created successfully")
+                    open_file(excel_path)
+                    continue
+                elif choice == "upload excel file with KPI definitions":
+                    counter = 0
+                    edited_excel = choose_excel_file()
+                    while counter<3:
+                        try:
+                            handle_kpi_template_upload(edited_excel)
+                            open_file(edited_excel)
+                            break
+                        except PermissionError:
+                            attempt = counter + 1
+                            counter+=1
+                            questionary.confirm(f"Please close the selected file to continue! | attempt number: {attempt} | do you want to try again").ask()
+                            continue
+                    if counter ==3:
+                        print("Operation cancelled")
+                        continue
+                    continue
+                elif choice == "Back":
+                    break          
         elif user_selection == "extract classes from XML dump":
             print("You chose to extract classes from XML dump.")
             xml_path = choose_xml_file() 

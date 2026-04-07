@@ -35,37 +35,53 @@ def choose_xml_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
     root.attributes("-topmost", True)
+    root.update()
     xml_path = filedialog.askopenfilename(title="Select XML File", filetypes=[("XML Files", "*.xml")])
     if not xml_path:
         print("No XML file selected. Exiting.")
+        root.destroy()
+        return "No file selected"
+    root.destroy()
     return xml_path
 def choose_csv_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
     root.attributes("-topmost", True)
+    root.update()
     csv_file_path = filedialog.askopenfilename(title="Select CSV File", filetypes=[("CSVL Files", "*.csv")])
     if not csv_file_path:
         print("No CSV file selected. Exiting.")
+        root.destroy()
         return "No file selected"
+    root.destroy()
     return csv_file_path
 def choose_excel_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
     root.attributes("-topmost", True)
+    root.update()
     excel_file_path = filedialog.askopenfilename(title="Select excel File", filetypes=[("excel Files", "*.xlsx")])
     if not excel_file_path:
         print("No excel file selected. Exiting.")
+        root.destroy()
         return "No file selected"
+    root.destroy()
     return excel_file_path
 def choose_excel_save_path():
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    root.attributes("-topmost", True)
     while True:
+        root.update()  # Update the window to ensure it is active
         excel_path = filedialog.asksaveasfilename(title="Save Excel File", defaultextension=".xlsx", filetypes=[("Excel Files", "*.xlsx")])
         if not excel_path:
             ask_cont=questionary.confirm("Do you want to continue choose file?").ask()
             if ask_cont:
                 continue
             else:
+                root.destroy()
                 return None
+        root.destroy()  # Close the Tkinter window
         return excel_path
 def select_classes_ui(classes):
     """
@@ -169,6 +185,15 @@ def counters_kpi_value_sub_menu():
             choices=[
                 "Insert CSV raw counters hourly values",
                 "Insert KPIs hourly values",
+                "Back"
+            ]).ask()
+    return selected
+def kpi_def_sub_menu():
+    selected = questionary.select(
+            "Choose a function to perform:",
+            choices=[
+                "Generate excel template for KPI definition",
+                "upload excel file with KPI definitions",
                 "Back"
             ]).ask()
     return selected
