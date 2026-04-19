@@ -1,15 +1,18 @@
-from src.cli.menu import user_selections, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu
+from src.cli.menu import user_selections, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu,params_compare_sub_menu
 from src.ingestion.ingest_xml_topology import ingest_xml_topology
 from tkinter import filedialog
 import questionary
-from src.parsers.xml_parser import extract_classes,extract_selected_objects
+from src.parsers.xml_parser import extract_classes,extract_selected_objects,extract_compare_parameters_template, convert_xml_to_comp_param_dict
+from src.parsers.excel_parser import convert_xl_to_dict
+from src.validation.param_compare_validation import compare_template_with_xml
 from src.export.xml_dump_excel_export import write_to_excel
+from src.export.compare_params_exports import write_compare_template_to_excel,export_mismatch_to_excel
 from src.export.counters_template_export import generate_counters_template ,create_empty_counters_template
 from src.export.kpi_template_export import create_empty_kpi_template
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
 from src.ingestion.counters_value_ingestion import ingest_counters_values, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
 from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
-from src.utils.distname_utils import distName_to_dict
+from src.parsers.template_transformer import transform_parameters, flatten_transformed_dict,group_by_class
 def main():
     while True:
         user_selection = user_selections()
@@ -154,7 +157,7 @@ def main():
                 continue
             result, schema, scanned_obj = extract_selected_objects(xml_path, selected_classes, object_counter)
         
-            output_path = filedialog.asksaveasfilename(title="Save Excel File", defaultextension=".xlsx", filetypes=[("Excel Files", "*.xlsx")])
+            output_path = choose_excel_save_path()
         
             if not output_path:
                 print("No output file selected. Exiting.")
@@ -163,6 +166,52 @@ def main():
             open_file(output_path)
         elif user_selection == "INSERT New Technology":
             handle_tech_ingest()
+        elif user_selection == "Compare two XML dumps":
+            choice_sub_menu = params_compare_sub_menu()
+            if choice_sub_menu == "Generate template to compare.":
+                xml_path = choose_xml_file() 
+                if not xml_path:
+                    continue
+                classes, object_counter = extract_classes(xml_path)
+                classes_list = sorted(classes)
+
+                selected_classes = select_classes_ui(classes_list)
+                print(selected_classes)
+                if not selected_classes:
+                    print("No classes selected. Exiting.")
+                    continue
+                parameters_dict = extract_compare_parameters_template(xml_path, selected_classes)
+                print(parameters_dict)
+                transformed_param_dict = transform_parameters(parameters_dict)
+                print(transformed_param_dict)
+                flattened_params = flatten_transformed_dict(transformed_param_dict)
+                print(flattened_params)
+                grouped_by_class_params = group_by_class(flattened_params)
+                print(grouped_by_class_params)
+                output_path = choose_excel_save_path()
+                if not output_path:
+                    print("No output file selected. Exiting.")
+                    continue
+                write_compare_template_to_excel(grouped_by_class_params,output_path)
+                open_file(output_path)
+                continue
+            elif choice_sub_menu=="Compare new data":
+                temp_file = choose_excel_file()
+                new_xml = choose_xml_file()
+                if not temp_file:
+                    continue
+                temp_dict, classes = convert_xl_to_dict(temp_file)
+                new_data_dict = convert_xml_to_comp_param_dict(new_xml,classes)
+                result_dict = compare_template_with_xml(temp_dict, new_data_dict)
+                result_xl_path = choose_excel_save_path()
+                if not result_xl_path:
+                    continue
+                export_mismatch_to_excel(result_dict, result_xl_path)
+                open_file(result_xl_path)
+                print(temp_dict)
+                continue
+            elif choice_sub_menu=="Back":
+                break
         elif user_selection == "Exit":
             break
 if __name__ == "__main__":

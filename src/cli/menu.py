@@ -13,6 +13,9 @@ def user_selections():
         3- Ingest KPI and counters values
         4- define new counter and ingest it in DB 
         5- define new KPI and ingest it in DB
+        6- INSERT New Technology
+        7- Compare two XML dumps
+        8- Exit
     """
     selected = questionary.select(
             "Choose a function to perform:",
@@ -23,7 +26,17 @@ def user_selections():
                 "define new counter and ingest it in DB",
                 "define new KPI and ingest it in DB",
                 "INSERT New Technology",
+                "Compare two XML dumps",
                 "Exit"
+            ]).ask()
+    return selected
+def params_compare_sub_menu():
+    selected = questionary.select(
+            "Choose a function to perform:",
+            choices=[
+                "Generate template to compare.",
+                "Compare new data",
+                "Back"
             ]).ask()
     return selected
 def open_file(path):

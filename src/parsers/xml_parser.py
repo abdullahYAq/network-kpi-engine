@@ -115,4 +115,109 @@ def extract_classes(xml_path):
         return classes_list, counter         
     except Exception as e:
         print(f"Error parsing XML file: {e}")
-        return classes_list, counter
+        return classes_list, counter 
+def extract_compare_parameters_template(xml_path, selected_classes):
+    """
+    Extract parameters for selected classes from an XML file.
+    Args:
+        xml_path (str): path to xml file
+        selected_classes (list): list of class names to extract parameters for
+    Returns:
+        class_name: {
+            parameters : {
+                    parameter1:[value1, value2,...],
+                    parameter2: [value1, value2,...],
+                    ...}
+            type: cell_or_site
+
+            }
+    """
+    countrer = 0
+    parameters_dict = {}
+    selected_classes_set = set(selected_classes)
+    try:
+        for event, elem in ET.iterparse(xml_path, events=("end",)):
+            if elem.tag.endswith("managedObject"):
+                class_name = elem.get("class")
+                distName = elem.get("distName")
+                distname_list = distName_to_dict(distName)
+                if "LNCEL" in distname_list:
+                    class_type = "cell"
+                else:
+                    class_type = "site"
+                if class_name in selected_classes_set:
+                    if class_name not in parameters_dict:
+                        parameters_dict[class_name] = {}
+                        parameters_dict[class_name] = {"type": class_type}
+                        parameters_dict[class_name]["parameters"] = {}
+                    for child in elem.iter():
+                        print(child.tag, child.attrib)
+                        if child.tag.endswith("p") and child.get("name") is not None:
+                            p_key = child.get("name")
+                            tag = child.tag.split("}")[-1]
+                            print("TAG:", tag, "ATTR:", child.attrib, "TEXT:", child.text)
+                            if p_key is None:
+                                continue
+                            p_value = child.text.strip() if child.text is not None else ""
+                            
+                            if p_key is not None:
+                                if p_key not in parameters_dict[class_name]["parameters"]:
+                                    parameters_dict[class_name]["parameters"][p_key] = []
+                                parameters_dict[class_name]["parameters"][p_key].append(p_value)
+                countrer += 1
+                if countrer % 100000 == 0:
+                    print("processed:", countrer)
+                
+                elem.clear()  # Clear the element to save memory
+        return parameters_dict
+    except Exception as e:
+        print(f"Error parsing XML file: {e}")
+        return parameters_dict
+    
+def convert_xml_to_comp_param_dict(xml_file, classes):
+    '''Extract parameters for selected classes from an XML file.
+        Args:
+        xml_path (str): path to xml file
+        selected_classes (list): list of class names to extract parameters for
+    Returns:
+        class_name: {
+            parameters : {
+                    parameter1:value,
+                    parameter2: value,
+                    ...}
+    }'''
+    parameters_dict = {}
+    counter=0
+    selected_classes_set = set(classes)
+    try:
+        for event, elem in ET.iterparse(xml_file, events=("end",)):
+            if elem.tag.endswith("managedObject"):
+                class_name = elem.get("class")
+                distName = elem.get("distName")
+                distname_list = distName_to_dict(distName)
+                if "LNCEL" in distname_list:
+                    id = f"{distname_list['MRBTS']}_{distname_list['LNCEL']}"
+                else:
+                    id = distname_list["MRBTS"]
+                current_obj = {
+                    "id": id,
+                    "parameters": {}
+                }
+                if class_name in selected_classes_set:
+                    if class_name not in parameters_dict:
+                        parameters_dict[class_name] = []
+                    for child in elem.iter():
+                        if child.tag.endswith("p") and child.get("name") is not None:
+                            p_key = child.get("name")
+                            p_value = child.text.strip() if child.text is not None else ""
+                            current_obj["parameters"][p_key]=p_value
+                    parameters_dict[class_name].append(current_obj)                
+                counter += 1
+                if counter % 100000 == 0:
+                    print("processed:", counter)
+                
+                elem.clear()  # Clear the element to save memory
+        return parameters_dict
+    except Exception as e:
+        print(f"Error parsing XML file: {e}")
+        return parameters_dict
