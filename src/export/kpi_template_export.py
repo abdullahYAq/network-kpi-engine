@@ -10,25 +10,27 @@ def create_empty_kpi_template(excel_path,header_name):
     workbook = openpyxl.load_workbook(excel_path)
     sheet_kpi_opxl = workbook[kpi_sheet_name]
     row_num = 100
-    validation_kpi_type = DataValidation(type="list",formula1='"ratio (num/den),expression"')
-    sheet_kpi_opxl.add_data_validation(validation_kpi_type)
-    validation_kpi_type.add(f"B2:B{row_num}")
+    #validation_kpi_type = DataValidation(type="list",formula1='"ratio (num/den),expression"')
+    #sheet_kpi_opxl.add_data_validation(validation_kpi_type)
+    #validation_kpi_type.add(f"B2:B{row_num}")
     validation_tech = DataValidation(type="list",formula1='"NSANR,LTE,UMTS,GSM"')
     sheet_kpi_opxl.add_data_validation(validation_tech)
-    validation_tech.add(f"H2:H{row_num}")
-    sheet_kpi_opxl.conditional_formatting.add(f"C2:C{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="expression"'], fill=openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type = "solid")))
-    sheet_kpi_opxl.conditional_formatting.add(f"C2:C{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="ratio (num/den)"'], fill=openpyxl.styles.PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type = "solid")))
-    sheet_kpi_opxl.conditional_formatting.add(f"D2:D{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="expression"'], fill=openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type = "solid")))
-    sheet_kpi_opxl.conditional_formatting.add(f"D2:D{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="ratio (num/den)"'], fill=openpyxl.styles.PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type = "solid")))
-    sheet_kpi_opxl.conditional_formatting.add(f"E2:E{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="expression"'], fill=openpyxl.styles.PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type = "solid")))
-    sheet_kpi_opxl.conditional_formatting.add(f"E2:E{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="ratio (num/den)"'], fill=openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type = "solid")))
-    sheet_kpi_opxl['C1'].comment = Comment("Write formula like: A + B - C\nUsed only when kpi_type = ratio",
-    "System")
-    sheet_kpi_opxl['D1'].comment = Comment("Write formula like: A + B + C\nUsed only when kpi_type = ratio",
-    "System")
-    sheet_kpi_opxl['E1'].comment = Comment("Write formula like: A + B - C\nUsed only when kpi_type = expression",
-    "System")
-    sheet_kpi_opxl['F1'].comment = Comment("if you want to multiply the final result by a number, write it here, \notherwise leave it empty and it will default to 1\n note: the multiplier will be applied to the final result of the formula, whether it's a ratio or an expression",
+    validation_tech.add(f"D2:D{row_num}")
+    #sheet_kpi_opxl.conditional_formatting.add(f"C2:C{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="expression"'], fill=openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type = "solid")))
+    #sheet_kpi_opxl.conditional_formatting.add(f"C2:C{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="ratio (num/den)"'], fill=openpyxl.styles.PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type = "solid")))
+    #sheet_kpi_opxl.conditional_formatting.add(f"D2:D{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="expression"'], fill=openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type = "solid")))
+    #sheet_kpi_opxl.conditional_formatting.add(f"D2:D{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="ratio (num/den)"'], fill=openpyxl.styles.PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type = "solid")))
+    #sheet_kpi_opxl.conditional_formatting.add(f"E2:E{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="expression"'], fill=openpyxl.styles.PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type = "solid")))
+    #sheet_kpi_opxl.conditional_formatting.add(f"E2:E{row_num}", openpyxl.formatting.rule.FormulaRule(formula = ['=$B2="ratio (num/den)"'], fill=openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type = "solid")))
+    #sheet_kpi_opxl['C1'].comment = Comment("Write formula like: A + B - C\nUsed only when kpi_type = ratio",
+    #"System")
+    #sheet_kpi_opxl['D1'].comment = Comment("Write formula like: A + B + C\nUsed only when kpi_type = ratio",
+    #"System")
+    #sheet_kpi_opxl['E1'].comment = Comment("Write formula like: A + B - C\nUsed only when kpi_type = expression",
+    #"System")
+    #sheet_kpi_opxl['F1'].comment = Comment("if you want to multiply the final result by a number, write it here, \notherwise leave it empty and it will default to 1\n note: the multiplier will be applied to the final result of the formula, whether it's a ratio or an expression",
+    #"System")
+    sheet_kpi_opxl['B1'].comment = Comment("Write formula parameter in 'KPI or Counter' \n for ex: 100*'INCORR_UL_SCH_TB_RECEPT (M8001C15)'/('INCORR_UL_SCH_TB_RECEPT (M8001C15)'+'CORR_UL_SCH_TB_RE_RECEPT (M8001C14)'+'CORR_NON_DUPL_UL_SCH_TB (M8001C13)') ",
     "System")
     auto_adjust_column_width(sheet_kpi_opxl)
     sheet_kpi_opxl.freeze_panes = "A2"

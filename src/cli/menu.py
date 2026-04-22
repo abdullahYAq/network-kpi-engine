@@ -205,8 +205,9 @@ def kpi_def_sub_menu():
     selected = questionary.select(
             "Choose a function to perform:",
             choices=[
-                "Generate excel template for KPI definition",
+                "Generate excel template for KPI definition and formula",
                 "upload excel file with KPI definitions",
+                "define KPI from CSV to be system KPI (no formula)",
                 "Back"
             ]).ask()
     return selected

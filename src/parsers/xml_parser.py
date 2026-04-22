@@ -116,7 +116,7 @@ def extract_classes(xml_path):
     except Exception as e:
         print(f"Error parsing XML file: {e}")
         return classes_list, counter 
-def extract_compare_parameters_template(xml_path, selected_classes):
+def extract_compare_parameters_template(xml_path, selected_classes, band_map):
     """
     Extract parameters for selected classes from an XML file.
     Args:
@@ -143,6 +143,8 @@ def extract_compare_parameters_template(xml_path, selected_classes):
                 distname_list = distName_to_dict(distName)
                 if "LNCEL" in distname_list:
                     class_type = "cell"
+                    cell_id = distname_list["LNCEL"]
+                    band_earfcn = band_map[cell_id]
                 else:
                     class_type = "site"
                 if class_name in selected_classes_set:
@@ -154,6 +156,7 @@ def extract_compare_parameters_template(xml_path, selected_classes):
                         print(child.tag, child.attrib)
                         if child.tag.endswith("p") and child.get("name") is not None:
                             p_key = child.get("name")
+                            param_band = p_key+"_"+band_earfcn
                             tag = child.tag.split("}")[-1]
                             print("TAG:", tag, "ATTR:", child.attrib, "TEXT:", child.text)
                             if p_key is None:
@@ -162,8 +165,8 @@ def extract_compare_parameters_template(xml_path, selected_classes):
                             
                             if p_key is not None:
                                 if p_key not in parameters_dict[class_name]["parameters"]:
-                                    parameters_dict[class_name]["parameters"][p_key] = []
-                                parameters_dict[class_name]["parameters"][p_key].append(p_value)
+                                    parameters_dict[class_name]["parameters"][param_band] = []
+                                parameters_dict[class_name]["parameters"][param_band].append(p_value)
                 countrer += 1
                 if countrer % 100000 == 0:
                     print("processed:", countrer)
@@ -172,8 +175,7 @@ def extract_compare_parameters_template(xml_path, selected_classes):
         return parameters_dict
     except Exception as e:
         print(f"Error parsing XML file: {e}")
-        return parameters_dict
-    
+        return parameters_dict    
 def convert_xml_to_comp_param_dict(xml_file, classes):
     '''Extract parameters for selected classes from an XML file.
         Args:
@@ -221,3 +223,22 @@ def convert_xml_to_comp_param_dict(xml_file, classes):
     except Exception as e:
         print(f"Error parsing XML file: {e}")
         return parameters_dict
+
+def get_lncel_band_map(xml_file):
+    band_map = {}
+    for event, elem in ET.iterparse(xml_file,events=("end",)):
+        if elem.tag.endswith("managedObject"):
+            class_name = elem.get("class")
+            band_classes = ["LNCEL_FDD", "LNCEL_TDD"]
+            if class_name in band_classes:
+                distName = elem.get("distName")
+                distname_list = distName_to_dict(distName)
+                cell_id = distname_list["LNCEL"]
+                for child in elem.iter():
+                    if child.tag.endswith("p") and child.get("name") is not None:
+                            p_key = child.get("name")
+                            if p_key in ("earfcnDL", "earfcn"):
+                                p_value = child.text.strip() if child.text else ""
+                                band_map[cell_id]= p_value
+            elem.clear()
+    return band_map

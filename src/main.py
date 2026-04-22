@@ -2,7 +2,7 @@ from src.cli.menu import user_selections, choose_xml_file,select_classes_ui, ope
 from src.ingestion.ingest_xml_topology import ingest_xml_topology
 from tkinter import filedialog
 import questionary
-from src.parsers.xml_parser import extract_classes,extract_selected_objects,extract_compare_parameters_template, convert_xml_to_comp_param_dict
+from src.parsers.xml_parser import extract_classes,extract_selected_objects,extract_compare_parameters_template, convert_xml_to_comp_param_dict, get_lncel_band_map
 from src.parsers.excel_parser import convert_xl_to_dict
 from src.validation.param_compare_validation import compare_template_with_xml
 from src.export.xml_dump_excel_export import write_to_excel
@@ -106,15 +106,14 @@ def main():
                     create_empty_counters_template(excel_path,header_name)
                     print("Template created successfully")
                     open_file(excel_path)
-                    continue
-                
+                    continue   
                 elif choice == "Back":
                     break
         elif user_selection == "define new KPI and ingest it in DB":
             while True:
                 choice = kpi_def_sub_menu()
-                if choice == "Generate excel template for KPI definition":
-                    header_name = ["kpi_name","kpi_type","numerator (ratio only)","denominator (ratio only)","expression (expression only)","multiplier","description","tech_name"]
+                if choice == "Generate excel template for KPI definition and formula":
+                    header_name = ["kpi_name","formula","description","tech_name"]
                     excel_path = choose_excel_save_path()
                     if not excel_path:
                         print("You did not choose path for the new template!")
@@ -139,6 +138,8 @@ def main():
                     if counter ==3:
                         print("Operation cancelled")
                         continue
+                    continue
+                elif choice == "define KPI from CSV to be system KPI (no formula)":
                     continue
                 elif choice == "Back":
                     break          
@@ -180,7 +181,8 @@ def main():
                 if not selected_classes:
                     print("No classes selected. Exiting.")
                     continue
-                parameters_dict = extract_compare_parameters_template(xml_path, selected_classes)
+                lncel_band_map = get_lncel_band_map(xml_path)
+                parameters_dict = extract_compare_parameters_template(xml_path, selected_classes,lncel_band_map)
                 print(parameters_dict)
                 transformed_param_dict = transform_parameters(parameters_dict)
                 print(transformed_param_dict)
