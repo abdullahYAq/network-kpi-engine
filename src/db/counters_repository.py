@@ -29,7 +29,8 @@ def get_all_counter_codes(db_config):
             '''
             cur.execute(sql)
             codes_db = cur.fetchall()
-            return codes_db
+            codes_db_list = [i[0] for i in codes_db]
+            return codes_db_list
 def insert_counters_to_db(df,db_config):
     tech_map = {"LTE":1,"UMTS":2,"GSM":3,"NSANR":0}
     df_copy = df

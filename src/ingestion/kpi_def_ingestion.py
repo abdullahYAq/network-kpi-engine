@@ -20,7 +20,7 @@ def handle_kpi_template_upload(excel_path):
         if all_errors_df.empty:
             #counter_code_counter_id_map = get_counter_id_counter_code_map(db_config)
             #parsed_functions = 
-            #insert_kpis_to_db(kpi_df, db_config, counter_code_counter_id_map)
+            insert_kpis_to_db(kpi_df, db_config)
             write_success_report(excel_path, warnings)
             print("KPI definitions are valid. KPI definitions have been inserted into the database successfully.")
         else:

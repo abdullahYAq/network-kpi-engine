@@ -1,4 +1,4 @@
-from src.cli.menu import user_selections, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu,params_compare_sub_menu
+from src.cli.menu import user_selections, export_selections_config, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu,params_compare_sub_menu
 from src.ingestion.ingest_xml_topology import ingest_xml_topology
 from tkinter import filedialog
 import questionary
@@ -12,6 +12,7 @@ from src.export.kpi_template_export import create_empty_kpi_template
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
 from src.ingestion.counters_value_ingestion import ingest_counters_values, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
 from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
+from src.ingestion.counters_kpis_export_ingesions import get_report_config, handle_counters_export_ingestion, handle_kpis_export_ingestion
 from src.parsers.template_transformer import transform_parameters, flatten_transformed_dict,group_by_class
 def main():
     while True:
@@ -122,7 +123,7 @@ def main():
                     print("Template created successfully")
                     open_file(excel_path)
                     continue
-                elif choice == "upload excel file with KPI definitions":
+                elif choice == "upload excel file with KPI definitions to be ingested in the system":
                     counter = 0
                     edited_excel = choose_excel_file()
                     while counter<3:
@@ -214,6 +215,17 @@ def main():
                 continue
             elif choice_sub_menu=="Back":
                 break
+        elif user_selection == "export counters and KPIs reports":
+            report_config = get_report_config()
+            choice = export_selections_config()
+            if choice == "Export counters report":
+                print("This function is not implemented yet.")
+                continue
+            elif choice == "Export KPIs report":
+                print("This function is not implemented yet.")
+                continue
+            elif choice == "Back":
+                continue
         elif user_selection == "Exit":
             break
 if __name__ == "__main__":

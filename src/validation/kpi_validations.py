@@ -232,11 +232,12 @@ def validate_kpi_template_dynamic_new(kpi_df, db_counters,kpi_names):
         all_kpis.update(data["kpi_dependencies"])
     missing_counter = all_counters - db_counters_set
     current_kpis = set(kpi_df["kpi_name"])
-
     missing_kpi = all_kpis - (kpi_names_set | current_kpis)
     for row in row_data:
         for counter in set(row["counters"]):
             if counter in missing_counter:
+                print(counter)
+                print(missing_counter)
                 errors.append((row["row_number"], "formula", f"counter '{counter}' not found in database", "error"))
         for kpi in row["kpi_dependencies"]:
             if kpi in missing_kpi:

@@ -20,6 +20,7 @@ def user_selections():
     selected = questionary.select(
             "Choose a function to perform:",
             choices=[
+                "export counters and KPIs reports",
                 "ingest Site and cells configration to the DB",
                 "extract classes from XML dump",
                 "Ingest KPI and counters values",
@@ -206,7 +207,7 @@ def kpi_def_sub_menu():
             "Choose a function to perform:",
             choices=[
                 "Generate excel template for KPI definition and formula",
-                "upload excel file with KPI definitions",
+                "upload excel file with KPI definitions to be ingested in the system",
                 "define KPI from CSV to be system KPI (no formula)",
                 "Back"
             ]).ask()
@@ -228,3 +229,42 @@ def handle_tech_ingest():
         return None
     tech_priority = int(tech_priority)
     insert_technology(db_config,tech_name,tech_priority)
+def export_period_sub_menu():
+    selected = questionary.select(
+            "Choose a daily or hourly report:",
+            choices=[
+                "daily",
+                "hourly"
+            ]).ask()
+    return selected
+def export_time_range_sub_menu():
+    selected = questionary.select(
+            "Choose a time range for the report:",
+            choices=[
+                "last 24 hours",
+                "last 7 days",
+                "last 30 days",
+                "custom range"
+            ]).ask()
+    return selected
+def export_time_custom_range():
+    start_date = questionary.text("Enter start date (YYYY-MM-DD): ").ask()
+    end_date = questionary.text("Enter end date (YYYY-MM-DD): ").ask()
+    return start_date, end_date
+def export_selections_config():
+    selected = questionary.select(
+        "Select which reports to export:",
+        choices=[
+            "Export counters report",
+            "Export KPIs report",
+            "Back"
+        ]).ask()
+    return selected
+def export_level_sub_menu():
+    selected = questionary.select(
+            "Choose a daily or hourly report:",
+            choices=[
+                "cell level",
+                "site level"
+            ]).ask()
+    return selected

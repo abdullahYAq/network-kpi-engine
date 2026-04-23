@@ -1,6 +1,5 @@
 from psycopg2 import connect, extras
 from src.parsers.kpi_formula_parser import parse_expression
-
 def get_kpi_id_name_from_db(db_config):
     id_kpi_dict = {}
     with connect(**db_config) as conn:
@@ -13,30 +12,26 @@ def get_kpi_id_name_from_db(db_config):
             for kpi in kpis:
                 id_kpi_dict.update({kpi[0]:kpi[1]})
             return id_kpi_dict
-def insert_kpis_to_db(kpi_df, db_config,counteridsmap):
+def insert_kpis_to_db(kpi_df, db_config):
+    tech_map = {"LTE":1,"UMTS":2,"GSM":3,"NSANR":0}
+    df_copy = kpi_df.copy()
+    df_copy["tech_id"] = df_copy["tech_name"].map(tech_map)
+    
+    kpi_tuple = [
+        (row["kpi_name"], row["description"], "formula",row["tech_id"])
+        for _, row in df_copy.iterrows()
+    ]
+    kpi_formula_rows = []
     with connect(**db_config) as conn:
         with conn.cursor() as cursor:
-            tech_map = {"LTE":1,"UMTS":2,"GSM":3,"NSANR":0}
-            df_copy = kpi_df.copy()
-            df_copy["tech_id"] = df_copy["tech_name"].map(tech_map)
             try:
-            # prepare kpi_def_rows
-                kpi_def_rows = []
-                kpi_formula_rows = []
-                source_type = "formula"
-                for i, row in df_copy.iterrows():
-                    kpi_def_rows.append((
-                        row["kpi_name"],
-                        row["description"],
-                        source_type,
-                        row["tech_id"],
-                    ))
                 sql_insert_kpi_def = """
                     INSERT INTO kpi.kpi_def (kpi_name, kpi_description, source_type, technology_id)
                     VALUES %s
-                    RETURNING kpi_name, kpi_id
+                    RETURNING kpi_name, id
                 """
-                kpi_ids = extras.execute_values(cursor, sql_insert_kpi_def, kpi_def_rows, fetch=True)
+                
+                kpi_ids = extras.execute_values(cursor, sql_insert_kpi_def, kpi_tuple, fetch=True)
                 kpi_id_map = {
                         i[0] : i[1]
                         for i in kpi_ids
@@ -44,22 +39,22 @@ def insert_kpis_to_db(kpi_df, db_config,counteridsmap):
                 # mapping counter codes to IDs for the inserted kpis
                 for i, row in df_copy.iterrows():
                     expression = row["formula"]
-                    kpi_formula_rows.append({
-                        "kpi_id": kpi_id_map[row["kpi_name"]],  
-                        "row_formula": expression,
-                        "norm_formula": expression.replace(" ","").replace("=","")
-                    })
+                    kpi_formula_rows.append((
+                        kpi_id_map[row["kpi_name"]],  
+                        expression,
+                        expression.replace(" ","").replace("=","")
+                    ))
+                
                 sql_insert_kpi_formula = """
-                    INSERT INTO kpi.kpi_formula (kpi_id, row_formula, norm_formula)
+                    INSERT INTO kpi.kpi_formula (kpi_id, raw_formula, norm_formula)
                     VALUES %s 
                 """
-                formula_tuple = [
-                    (row["kpi_id"], row["row_formula"], row["norm_formula"])
-                    for row in kpi_formula_rows
-                ]
-                extras.execute_values(cursor,sql_insert_kpi_formula, formula_tuple)
+                
+                extras.execute_values(cursor,sql_insert_kpi_formula, kpi_formula_rows)
             except Exception as e:
-                raise e
+                
+                raise e   
+            
 def get_all_kpi_names(db_config):
     with connect(**db_config) as conn:
         with conn.cursor() as cur:
