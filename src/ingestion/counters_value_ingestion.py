@@ -9,10 +9,6 @@ import datetime
 def load_counter_values(csv_path):
     #csv_df = 
     csv_df = pd.read_csv(csv_path,delimiter=";")
-    #csv_df.melt(id_vars=[1,2,3,3],value_vars=["ff","ss"],var_name="counter_id",value_name="value")
-    """
-
-    """
     headers_op = {"PERIOD_START_TIME","MRBTS name","LNCEL name","DN", "LNBTS name"}
     column_list = csv_df.columns.to_list()
     counter_list = [

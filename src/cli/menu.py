@@ -22,12 +22,12 @@ def user_selections():
             choices=[
                 "export counters and KPIs reports",
                 "ingest Site and cells configration to the DB",
-                "extract classes from XML dump",
+                #"extract classes from XML dump",
                 "Ingest KPI and counters values",
                 "define new counter and ingest it in DB",
                 "define new KPI and ingest it in DB",
                 "INSERT New Technology",
-                "Compare two XML dumps",
+                #"Compare two XML dumps",
                 "Exit"
             ]).ask()
     return selected
@@ -97,33 +97,33 @@ def choose_excel_save_path():
                 return None
         root.destroy()  # Close the Tkinter window
         return excel_path
-def select_classes_ui(classes):
+def select_names_ui(names_list):
     """
-    Prompt user to select classes from a list.
+    Prompt user to select names from a list.
     Args:
-        classes (list): list of class names"""
-    selected_classes = set()
+        names_list (list): list of chosen names"""
+    selected = set()
     while True:
         keywords = questionary.text(
-        "Enter keywords to filter classes (comma or space separated, leave empty for all):"
+        "Enter keywords to filter (comma or space separated, leave empty for all):"
         ).ask()
         if keywords is None:
             return []
-        filtered_classes = filter_classes_by_keywords(classes, keywords)
-        if not filtered_classes:
-            print("No classes match your search.")
+        filtered = filter_classes_by_keywords(names_list, keywords)
+        if not filtered:
+            print("No names match your search.")
             continue
-        chosen_classes = questionary.checkbox(
-            f"{len(filtered_classes)} classes found:",
-            choices=sorted(filtered_classes)
+        chosen_names = questionary.checkbox(
+            f"{len(filtered)} names found:",
+            choices=sorted(filtered)
         ).ask()
-        if not chosen_classes:
-            print("No classes selected from the search results.")
-        if chosen_classes:
-            before = len(selected_classes)
-            selected_classes.update(chosen_classes)
-            added = len(selected_classes) - before
-            print(f"{added} new classes added. Total selected: {len(selected_classes)}")
+        if not chosen_names:
+            print("No names selected from the search results.")
+        if chosen_names:
+            before = len(selected)
+            selected.update(chosen_names)
+            added = len(selected) - before
+            print(f"{added} new names added. Total selected: {len(selected)}")
         action = questionary.select(
             "Next Step:",
             choices=[
@@ -136,35 +136,47 @@ def select_classes_ui(classes):
         if action == "search again":
             continue
         elif action == "show selected":
-            if not selected_classes:
-                print("No classes selected yet.")
+            if not selected:
+                print("No names selected yet.")
             else:
-                print("Selected classes:")
-                for c in sorted(selected_classes):
+                print("Selected names:")
+                for c in sorted(selected):
                     print(f" - {c}")
         elif action == "remove from selection":
-            if not selected_classes:
-                print("No classes to remove. Selection is empty.")
+            if not selected:
+                print("No names to remove. Selection is empty.")
                 continue
             to_remove = questionary.checkbox(
-                "Select classes to remove from selection:",
-                choices=sorted(selected_classes)
+                "Select names to remove from selection:",
+                choices=sorted(selected)
             ).ask()
             if to_remove:
                 for c in to_remove:
-                    selected_classes.discard(c)
-                print(f"{len(to_remove)} classes removed. Total selected: {len(selected_classes)}")
+                    selected.discard(c)
+                print(f"{len(to_remove)} names removed. Total selected: {len(selected)}")
             else:
-                print("No classes removed.")
+                print("No names removed.")
         elif action == "confirm selection":
-            if not selected_classes:
-                print("No classes selected. Please select at least one class.") 
+            if not selected:
+                print("No names selected. Please select at least one name.") 
                 continue
-            confirm = questionary.confirm(f"Confirm selection of {len(selected_classes)} classes?").ask()
+            confirm = questionary.confirm(f"Confirm selection of {len(selected)} names?").ask()
             if confirm:
-                return sorted(selected_classes)
+                return sorted(selected)
         elif action == "Exit":
             break
+def select_counters_cells_ui():
+    """
+    user write counter codes and lncel values separated by comma or space, then return 2 lists of counters and lncel values
+    """
+    counter_codes = questionary.text("Enter counter codes (comma or space separated): ").ask()
+    lncel_values = questionary.text("Enter lncel values (comma or space separated): ").ask()
+    if counter_codes is None or lncel_values is None:
+        print("Input cancelled. Returning empty lists.")
+        return [], []
+    counter_codes_list = [c.strip().upper() for c in counter_codes.replace(",", " ").split() if c.strip()]
+    lncel_values_list = [l.strip() for l in lncel_values.replace(",", " ").split() if l.strip()]
+    return counter_codes_list, lncel_values_list
 def filter_classes_by_keywords(classes, keywords):
     """
     Filter classes by keywords (case-insensitive).
@@ -212,6 +224,15 @@ def kpi_def_sub_menu():
                 "Back"
             ]).ask()
     return selected
+def kpi_def_csv_menu():
+    selected = questionary.select(
+            "Choose a function to perform:",
+            choices=[
+                "Detect KPIs from CSV",
+                "Upload KPIs template",
+                "Back"
+            ]).ask()
+    return selected
 def missing_cells_insert_sub_menu():
     selected = questionary.select(
             "Choose a function to perform:",
@@ -250,6 +271,7 @@ def export_time_range_sub_menu():
 def export_time_custom_range():
     start_date = questionary.text("Enter start date (YYYY-MM-DD): ").ask()
     end_date = questionary.text("Enter end date (YYYY-MM-DD): ").ask()
+
     return start_date, end_date
 def export_selections_config():
     selected = questionary.select(

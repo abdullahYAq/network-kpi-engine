@@ -15,3 +15,5 @@ tests/
 KPIV2.session.sql
 NetworkEngin.session.sql
 *.csv
+*.xlsx
+*.drawio

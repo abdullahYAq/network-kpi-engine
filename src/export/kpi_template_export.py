@@ -35,6 +35,21 @@ def create_empty_kpi_template(excel_path,header_name):
     auto_adjust_column_width(sheet_kpi_opxl)
     sheet_kpi_opxl.freeze_panes = "A2"
     workbook.save(excel_path)
+def generate_kpi_template_system(header_name,rows,tech_values,excel_path):
+    kpi_sheet_name = "New KPI Insertion"
+    kpi_excel_data = pd.DataFrame(data=rows,columns=header_name)
+    kpi_excel_data.to_excel(excel_path,sheet_name=kpi_sheet_name,index=False)
+    workbook = openpyxl.load_workbook(excel_path)
+    sheet_kpi_opxl = workbook[kpi_sheet_name]
+    row_num = 100
+    validation_tech = DataValidation(type="list",formula1='"NSANR,LTE,UMTS,GSM"')
+    sheet_kpi_opxl.add_data_validation(validation_tech)
+    validation_tech.add(f"C2:C{row_num}")
+    
+    auto_adjust_column_width(sheet_kpi_opxl)
+    sheet_kpi_opxl.freeze_panes = "A2"
+    workbook.save(excel_path)
+    return excel_path
 def auto_adjust_column_width(sheet):
     for column_cells in sheet.columns:
         max_length = 0

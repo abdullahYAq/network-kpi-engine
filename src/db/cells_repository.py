@@ -60,3 +60,15 @@ def get_distname_id_map(db_config):
                 for i in distname_id
             }
             return distname_map
+def get_cells_in_list(cells_list,db_config):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT lncel 
+                FROM kpi.cells
+                WHERE lncel IN %s
+            '''
+            cur.execute(sql, (tuple(cells_list),))
+            cells_db = cur.fetchall()
+            cells_db_list = [i[0] for i in cells_db]
+            return cells_db_list

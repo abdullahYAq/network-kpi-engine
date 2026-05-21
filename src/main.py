@@ -1,4 +1,4 @@
-from src.cli.menu import user_selections, export_selections_config, choose_xml_file,select_classes_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu,params_compare_sub_menu
+from src.cli.menu import kpi_def_csv_menu,user_selections, export_selections_config, choose_xml_file,select_names_ui, open_file, choose_csv_file, handle_tech_ingest,counter_def_sub_menu,choose_excel_save_path, choose_excel_file,counters_kpi_value_sub_menu,missing_cells_insert_sub_menu,kpi_def_sub_menu,params_compare_sub_menu, select_counters_cells_ui
 from src.ingestion.ingest_xml_topology import ingest_xml_topology
 from tkinter import filedialog
 import questionary
@@ -8,12 +8,13 @@ from src.validation.param_compare_validation import compare_template_with_xml
 from src.export.xml_dump_excel_export import write_to_excel
 from src.export.compare_params_exports import write_compare_template_to_excel,export_mismatch_to_excel
 from src.export.counters_template_export import generate_counters_template ,create_empty_counters_template
-from src.export.kpi_template_export import create_empty_kpi_template
+from src.export.kpi_template_export import create_empty_kpi_template,generate_kpi_template_system
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
 from src.ingestion.counters_value_ingestion import ingest_counters_values, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
 from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
 from src.ingestion.counters_kpis_export_ingesions import get_report_config, handle_counters_export_ingestion, handle_kpis_export_ingestion
 from src.parsers.template_transformer import transform_parameters, flatten_transformed_dict,group_by_class
+from src.ingestion.kpi_def_ingestion import detect_kpi_flow
 def main():
     while True:
         user_selection = user_selections()
@@ -41,14 +42,14 @@ def main():
                         while True:
                             if missing_cells_choice == "Insert missing cells to DB":
                                 print("no function implemented yet to insert cells based on DN, you can insert them manually in the DB and try again")
-                                continue                      
+                                break                      
                             elif missing_cells_choice == "continue without inserting":
                                 # you can choose to continue without inserting the missing cells, but the corresponding counter values will not be ingested for those cells.
                                 print("continuing without inserting missing cells, the corresponding counter values will not be ingested for those cells.")
                                 cleaned_missed_cells = cleaned_mapped_df[cleaned_mapped_df["cell_id"].isna()]["DN"].unique()
-                                print(f"missed_cells that will not be ingested: {cleaned_missed_cells}")
-                                print(cleaned_mapped_df)
-                                print(cleaned_mapped_df.isna().sum(), "\n", cleaned_mapped_df.dtypes)
+                                #print(f"missed_cells that will not be ingested: {cleaned_missed_cells}")
+                                #print(cleaned_mapped_df)
+                                #print(cleaned_mapped_df.isna().sum(), "\n", cleaned_mapped_df.dtypes)
                                 #ingest_counters_values(cleaned_mapped_df)
                                 ingest_counters_values(cleaned_mapped_df)
                                 break
@@ -60,6 +61,7 @@ def main():
                         break
                 elif choice == "Insert KPIs hourly values":
                     print("This function is not implemented yet.")
+                    csv_path = choose_csv_file()
                     continue
                 elif choice == "Back":
                     break
@@ -141,7 +143,39 @@ def main():
                         continue
                     continue
                 elif choice == "define KPI from CSV to be system KPI (no formula)":
-                    continue
+                    choice_kpi_csv = kpi_def_csv_menu()
+                    if choice_kpi_csv == "Detect KPIs from CSV":
+                        csv_path = choose_csv_file()
+                        result=detect_kpi_flow(csv_path)
+                        if not result:
+                            print("No new KPIs to insert")
+                            continue
+                        rows, tech_values = result
+                        excel_path = choose_excel_save_path()
+                        if not excel_path:
+                            print("No excel file selected!")
+                            continue
+                        header_name = ["kpi_name","description","tech_name"]
+                        excel_path = generate_kpi_template_system(header_name,rows,tech_values,excel_path)
+                        open_file(excel_path)
+                        continue
+                    elif choice_kpi_csv == "Upload KPIs template":
+                        counter = 0
+                        edited_excel = choose_excel_file()
+                        while counter<3:
+                            try:
+                                handle_kpi_template_upload(edited_excel)
+                                open_file(edited_excel)
+                                break
+                            except PermissionError:
+                                attempt = counter + 1
+                                counter+=1
+                                questionary.confirm(f"Please close the selected file to continue! | attempt number: {attempt} | do you want to try again").ask()
+                                continue
+                        if counter ==3:
+                            print("Operation cancelled")
+                            continue
+                        continue
                 elif choice == "Back":
                     break          
         elif user_selection == "extract classes from XML dump":
@@ -152,7 +186,7 @@ def main():
             classes, object_counter = extract_classes(xml_path)
             classes_list = sorted(classes)
 
-            selected_classes = select_classes_ui(classes_list)
+            selected_classes = select_names_ui(classes_list)
             print(selected_classes)
             if not selected_classes:
                 print("No classes selected. Exiting.")
@@ -177,7 +211,7 @@ def main():
                 classes, object_counter = extract_classes(xml_path)
                 classes_list = sorted(classes)
 
-                selected_classes = select_classes_ui(classes_list)
+                selected_classes = select_names_ui(classes_list)
                 print(selected_classes)
                 if not selected_classes:
                     print("No classes selected. Exiting.")
@@ -219,9 +253,32 @@ def main():
             report_config = get_report_config()
             choice = export_selections_config()
             if choice == "Export counters report":
-                print("This function is not implemented yet.")
+                cells_user_list = select_names_ui(classes_list)
+                print(cells_user_list)
+                if not cells_user_list:
+                    print("No cells selected. Exiting.")
+                    continue
+                counters_user_list = select_names_ui(classes_list)
+                print(counters_user_list)
+                if not counters_user_list:
+                    print("No counters selected. Exiting.")
+                    continue
+                print(f"User selected counters: {counters_user_list}")
+                print(f"User selected cells: {cells_user_list}")    
+                counter_pivot = handle_counters_export_ingestion(report_config,counters_user_list,cells_user_list)
+                print(counter_pivot)
+                if counter_pivot is None or counter_pivot.empty:
+                    print("No data to export.")
+                    continue
+                excel_path = choose_excel_save_path()
+                if not excel_path:
+                    print("No excel file selected!")
+                    continue
+                counter_pivot.to_excel(excel_path)
+                open_file(excel_path)
                 continue
             elif choice == "Export KPIs report":
+                handle_kpis_export_ingestion(report_config)
                 print("This function is not implemented yet.")
                 continue
             elif choice == "Back":
