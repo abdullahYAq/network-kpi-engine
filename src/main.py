@@ -12,7 +12,7 @@ from src.export.kpi_template_export import create_empty_kpi_template,generate_kp
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
 from src.ingestion.counters_value_ingestion import ingest_counters_values, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
 from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
-from src.ingestion.counters_kpis_export_ingesions import get_report_config, handle_counters_export_ingestion, handle_kpis_export_ingestion
+from src.ingestion.counters_kpis_export_ingesions import get_report_config, handle_counters_export_ingestion, handle_kpis_export_ingestion, get_kpis_and_cells_db, get_counters_and_cells_db
 from src.parsers.template_transformer import transform_parameters, flatten_transformed_dict,group_by_class
 from src.ingestion.kpi_def_ingestion import detect_kpi_flow
 def main():
@@ -61,7 +61,7 @@ def main():
                         break
                 elif choice == "Insert KPIs hourly values":
                     print("This function is not implemented yet.")
-                    csv_path = choose_csv_file()
+                    #csv_path = choose_csv_file()
                     continue
                 elif choice == "Back":
                     break
@@ -186,7 +186,7 @@ def main():
             classes, object_counter = extract_classes(xml_path)
             classes_list = sorted(classes)
 
-            selected_classes = select_names_ui(classes_list)
+            selected_classes = select_names_ui(classes_list, "classes")
             print(selected_classes)
             if not selected_classes:
                 print("No classes selected. Exiting.")
@@ -253,12 +253,15 @@ def main():
             report_config = get_report_config()
             choice = export_selections_config()
             if choice == "Export counters report":
-                cells_user_list = select_names_ui(classes_list)
+                cells_list, counters_list = get_counters_and_cells_db()
+                str_cells = list(map(str, cells_list))
+                str_counters = list(map(str, counters_list))
+                cells_user_list = select_names_ui(str_cells, "cells")
                 print(cells_user_list)
                 if not cells_user_list:
                     print("No cells selected. Exiting.")
                     continue
-                counters_user_list = select_names_ui(classes_list)
+                counters_user_list = select_names_ui(str_counters, "counters")
                 print(counters_user_list)
                 if not counters_user_list:
                     print("No counters selected. Exiting.")
@@ -266,7 +269,7 @@ def main():
                 print(f"User selected counters: {counters_user_list}")
                 print(f"User selected cells: {cells_user_list}")    
                 counter_pivot = handle_counters_export_ingestion(report_config,counters_user_list,cells_user_list)
-                print(counter_pivot)
+                #print(counter_pivot)
                 if counter_pivot is None or counter_pivot.empty:
                     print("No data to export.")
                     continue
@@ -278,8 +281,30 @@ def main():
                 open_file(excel_path)
                 continue
             elif choice == "Export KPIs report":
-                handle_kpis_export_ingestion(report_config)
-                print("This function is not implemented yet.")
+                cells_list, kpis_list = get_kpis_and_cells_db()
+                str_cells = list(map(str, cells_list))
+                str_kpis = list(map(str, kpis_list))
+                cells_user_list = select_names_ui(str_cells, "cells")
+                #print(cells_user_list)
+                if not cells_user_list:
+                    print("No cells selected. Exiting.")
+                    continue    
+                kpis_user_list = select_names_ui(str_kpis, "KPIs")
+                #print(kpis_user_list)
+                if not kpis_user_list:
+                    print("No KPIs selected. Exiting.")
+                    continue
+                kpi_pivot = handle_kpis_export_ingestion(report_config,kpis_user_list,cells_user_list)
+                #print(kpi_pivot)
+                if kpi_pivot is None or kpi_pivot.empty:
+                    print("No data to export.")
+                    continue
+                excel_path = choose_excel_save_path()
+                if not excel_path:
+                    print("No excel file selected!")
+                    continue
+                kpi_pivot.to_excel(excel_path)
+                open_file(excel_path)
                 continue
             elif choice == "Back":
                 continue

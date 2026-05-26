@@ -65,3 +65,27 @@ def get_all_kpi_names(db_config):
             cur.execute(sql)
             kpi_db = cur.fetchall()
             return kpi_db
+        
+def get_all_kpi_names_list(db_config):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT kpi_name 
+                FROM kpi.kpi_def
+            '''
+            cur.execute(sql)
+            kpi_db = cur.fetchall()
+            kpi_db_list = [i[0] for i in kpi_db]
+            return kpi_db_list
+def get_kpis_in_list(kpi_list,db_config):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT kpi_name 
+                FROM kpi.kpi_def
+                WHERE kpi_name IN %s
+            '''
+            cur.execute(sql, (tuple(kpi_list),))
+            kpi_db = cur.fetchall()
+            kpi_db_list = [i[0] for i in kpi_db]
+            return kpi_db_list

@@ -72,3 +72,15 @@ def get_cells_in_list(cells_list,db_config):
             cells_db = cur.fetchall()
             cells_db_list = [i[0] for i in cells_db]
             return cells_db_list
+def get_all_cells(db_config):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT lncel 
+                FROM kpi.cells
+                
+            '''
+            cur.execute(sql)
+            cells_db = cur.fetchall()
+            cells_db_list = [i[0] for i in cells_db]
+            return cells_db_list

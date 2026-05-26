@@ -1,10 +1,29 @@
 from src.config.db_config import db_config
 import pandas as pd
-from src.db.counters_repository import get_all_counter_codes, get_counter_id_counter_code_map
+from src.db.technology_repository import get_tech_from_db
+from src.db.counters_repository import get_all_counter_codes
 from src.db.kpi_def_repository import insert_kpis_to_db,get_all_kpi_names
 from src.validation.kpi_validations import validate_kpi_template_statics_new, validate_kpi_template_dynamic_new
 from src.export.kpi_template_export import write_errors_report,write_success_report
+from src.parsers.counters_csv_parser import extract_counters_from_csv_header, extract_kpi_from_csv_header
 import datetime
+def detect_kpi_flow(csv_path):
+    kpis_dict = extract_kpi_from_csv_header(csv_path)
+    if not kpis_dict:
+        return None
+    #db_counters_codes = get_all_counter_codes(db_config) 
+    db_kpi_name = get_all_kpi_names(db_config)
+    new_kpi_rows = filter_new_kpis(db_kpi_name,kpis_dict)
+    if not new_kpi_rows:
+        return None
+    tech_values = get_tech_from_db(db_config)
+    return new_kpi_rows, tech_values
+def filter_new_kpis(db_kpi_names,kpis_dict):
+    names_set = {row[0] for row in db_kpi_names}
+    new_kpis= [name for name in kpis_dict.keys() if name not in names_set] 
+    print(f"{len(new_kpis)} new KPIs in your data from {len(kpis_dict)} imported")
+    rows = [[name,"",""] for name in new_kpis]
+    return rows                                
 def read_xcel_file(excel_path):
     df = pd.read_excel(excel_path)
     return df

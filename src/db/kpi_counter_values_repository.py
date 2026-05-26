@@ -1,4 +1,5 @@
 from psycopg2 import connect, extras
+import pandas as pd
 def insert_counter_values_to_db(csv_path,db_config):
     try:
         with connect(**db_config) as conn:
@@ -38,3 +39,19 @@ def get_kpi_id_kpi_name_map(db_config):
     except Exception as e:
         print(f"Error occurred while fetching KPI ID to KPI Name map: {e}")
         return {}        
+def get_kpis_row_values_df(db_config,kpi_list,start_time,end_time,lncel_list):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT kv.period_start_time, c.lncel, kd.kpi_name, kv.kpi_value
+                FROM kpi.kpi_values kv
+                JOIN kpi.kpi_def kd ON kv.kpi_id = kd.id
+                JOIN kpi.cells c ON kv.cell_id = c.id
+                WHERE kd.kpi_name IN %s
+                AND kv.period_start_time BETWEEN %s AND %s
+                AND c.lncel IN %s
+            '''
+            cur.execute(sql, (tuple(kpi_list), start_time, end_time, tuple(lncel_list)))
+            rows = cur.fetchall()
+            df = pd.DataFrame(rows, columns=["period_start_time", "lncel", "kpi_name", "kpi_value"])
+            return df

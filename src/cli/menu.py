@@ -7,27 +7,28 @@ from src.config.db_config import db_config
 def user_selections():
     """
     prompt user for choose functions of the program 
-        1- ingest Site and cells configration to the DB
+        1- export counters and KPIs reports
+        2- ingest Site and cells configration to the DB
             - XCEL, CSV or XML
-        2- extract classes from XML dump
-        3- Ingest KPI and counters values
-        4- define new counter and ingest it in DB 
-        5- define new KPI and ingest it in DB
-        6- INSERT New Technology
-        7- Compare two XML dumps
-        8- Exit
+        3- extract classes from XML dump
+        4- Ingest KPI and counters values
+        5- define new counter and ingest it in DB 
+        6- define new KPI and ingest it in DB
+        7- INSERT New Technology
+        8- Compare two XML dumps
+        9- Exit
     """
     selected = questionary.select(
             "Choose a function to perform:",
             choices=[
                 "export counters and KPIs reports",
                 "ingest Site and cells configration to the DB",
-                #"extract classes from XML dump",
+                "extract classes from XML dump",
                 "Ingest KPI and counters values",
                 "define new counter and ingest it in DB",
                 "define new KPI and ingest it in DB",
                 "INSERT New Technology",
-                #"Compare two XML dumps",
+                "Compare two XML dumps",
                 "Exit"
             ]).ask()
     return selected
@@ -97,7 +98,7 @@ def choose_excel_save_path():
                 return None
         root.destroy()  # Close the Tkinter window
         return excel_path
-def select_names_ui(names_list):
+def select_names_ui(names_list, names):
     """
     Prompt user to select names from a list.
     Args:
@@ -105,25 +106,25 @@ def select_names_ui(names_list):
     selected = set()
     while True:
         keywords = questionary.text(
-        "Enter keywords to filter (comma or space separated, leave empty for all):"
+        f"Enter keywords to filter '{names}' (comma or space separated, leave empty for all):"
         ).ask()
         if keywords is None:
             return []
         filtered = filter_classes_by_keywords(names_list, keywords)
         if not filtered:
-            print("No names match your search.")
+            print(f"No '{names}' match your search.")
             continue
         chosen_names = questionary.checkbox(
-            f"{len(filtered)} names found:",
+            f"{len(filtered)} {names} found:",
             choices=sorted(filtered)
         ).ask()
         if not chosen_names:
-            print("No names selected from the search results.")
+            print(f"No {names} selected from the search results.")
         if chosen_names:
             before = len(selected)
             selected.update(chosen_names)
             added = len(selected) - before
-            print(f"{added} new names added. Total selected: {len(selected)}")
+            print(f"{added} new {names} added. Total selected: {len(selected)}")
         action = questionary.select(
             "Next Step:",
             choices=[

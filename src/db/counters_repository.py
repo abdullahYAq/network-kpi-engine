@@ -77,3 +77,14 @@ def get_counters_in_list(counters_list,db_config):
             codes_db = cur.fetchall()
             codes_db_list = [i[0] for i in codes_db]
             return codes_db_list
+def get_all_counters_codes(db_config):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT counter_code 
+                FROM kpi.counters_def
+            '''
+            cur.execute(sql)
+            codes_db = cur.fetchall()
+            codes_db_list = [i[0] for i in codes_db]
+            return codes_db_list
