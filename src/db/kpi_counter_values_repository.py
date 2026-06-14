@@ -14,6 +14,20 @@ def insert_counter_values_to_db(csv_path,db_config):
     except Exception as e:
         print(f"Error occurred while inserting counter values to DB: {e}")
         print("Failed to insert counter values into the database.")
+def insert_counter_daily_values_to_db(csv_path,db_config):
+    try:
+        with connect(**db_config) as conn:
+            with conn.cursor() as cur:
+                sql = '''
+                        COPY kpi.counter_values_daily (period_start_time, cell_id, counter_id, counter_value)
+                        FROM STDIN WITH CSV HEADER DELIMITER AS ','
+                    '''
+                # Execute the SQL statement csv file using copy_from for efficient bulk insert
+                with open(csv_path, 'r', encoding='utf-8') as f:
+                    cur.copy_expert(sql, f)
+    except Exception as e:
+        print(f"Error occurred while inserting counter values to DB: {e}")
+        print("Failed to insert counter values into the database.")
 def insert_kpi_values_to_db(csv_path,db_config):
     try:
         with connect(**db_config) as conn:

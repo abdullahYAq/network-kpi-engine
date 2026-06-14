@@ -1,4 +1,4 @@
-from src.db.kpi_counter_values_repository import insert_counter_values_to_db
+from src.db.kpi_counter_values_repository import insert_counter_values_to_db,insert_counter_daily_values_to_db
 from src.config.db_config import db_config
 import pandas as pd
 from src.db.counters_repository import get_all_counter_codes,get_counter_id_counter_code_map
@@ -100,3 +100,14 @@ def ingest_counters_values(df):
     print(df_last.head())
     print(df_last.dtypes)
     insert_counter_values_to_db(csv_file_name,db_config)
+def ingest_counters_values_daily(df):
+    df_reordered = df[["PERIOD_START_TIME","cell_id","counter_id","counter_value"]]
+    print(df_reordered.head())
+    df_reordered["PERIOD_START_TIME"] = pd.to_datetime(df_reordered["PERIOD_START_TIME"], format="%m.%d.%Y")
+    df_last=df_reordered.rename(columns={"PERIOD_START_TIME":"period_start_time"})
+    df_last['period_start_time'] = df_last['period_start_time'].dt.strftime('%Y-%m-%d')
+    csv_file_name = datetime.datetime.now().strftime("counter_values_daily_%Y%m%d.csv")
+    df_last.to_csv(csv_file_name,index=False)
+    print(df_last.head())
+    print(df_last.dtypes)
+    insert_counter_daily_values_to_db(csv_file_name,db_config)

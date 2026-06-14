@@ -211,6 +211,7 @@ def counters_kpi_value_sub_menu():
             "Choose a function to perform:",
             choices=[
                 "Insert CSV raw counters hourly values",
+                "Insert CSV raw counters daily values",
                 "Insert KPIs hourly values",
                 "Back"
             ]).ask()

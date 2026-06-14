@@ -10,7 +10,7 @@ from src.export.compare_params_exports import write_compare_template_to_excel,ex
 from src.export.counters_template_export import generate_counters_template ,create_empty_counters_template
 from src.export.kpi_template_export import create_empty_kpi_template,generate_kpi_template_system
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
-from src.ingestion.counters_value_ingestion import ingest_counters_values, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
+from src.ingestion.counters_value_ingestion import ingest_counters_values, ingest_counters_values_daily, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
 from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
 from src.ingestion.counters_kpis_export_ingesions import get_report_config, handle_counters_export_ingestion, handle_kpis_export_ingestion, get_kpis_and_cells_db, get_counters_and_cells_db
 from src.parsers.template_transformer import transform_parameters, flatten_transformed_dict,group_by_class
@@ -23,7 +23,7 @@ def main():
         elif user_selection == "Ingest KPI and counters values":
             while True:
                 choice = counters_kpi_value_sub_menu()
-                if choice == "Insert CSV raw counters hourly values":
+                if choice == "Insert CSV raw counters hourly values" or choice == "Insert CSV raw counters daily values":
                     csv_path = choose_csv_file()
                     counter_list,df = load_counter_values(csv_path)
                     
@@ -47,17 +47,22 @@ def main():
                                 # you can choose to continue without inserting the missing cells, but the corresponding counter values will not be ingested for those cells.
                                 print("continuing without inserting missing cells, the corresponding counter values will not be ingested for those cells.")
                                 cleaned_missed_cells = cleaned_mapped_df[cleaned_mapped_df["cell_id"].isna()]["DN"].unique()
-                                #print(f"missed_cells that will not be ingested: {cleaned_missed_cells}")
-                                #print(cleaned_mapped_df)
-                                #print(cleaned_mapped_df.isna().sum(), "\n", cleaned_mapped_df.dtypes)
-                                #ingest_counters_values(cleaned_mapped_df)
-                                ingest_counters_values(cleaned_mapped_df)
+                                print(f"missed_cells that will not be ingested: {cleaned_missed_cells}")
+                                if choice == "Insert CSV raw counters hourly values":
+                                    ingest_counters_values(cleaned_mapped_df)
+                                elif choice == "Insert CSV raw counters daily values":
+                                    ingest_counters_values_daily(cleaned_mapped_df)
                                 break
                             elif missing_cells_choice == "Back":
                                 break
                     else:
                         print("All cells are mapped successfully!")
-                        ingest_counters_values(mapped_df)
+                        if choice == "Insert CSV raw counters hourly values":
+                            print("ingesting counters hourly values to DB...")
+                            ingest_counters_values(cleaned_mapped_df)
+                        elif choice == "Insert CSV raw counters daily values":
+                            print("ingesting counters daily values to DB...")
+                            ingest_counters_values_daily(cleaned_mapped_df)
                         break
                 elif choice == "Insert KPIs hourly values":
                     print("This function is not implemented yet.")
