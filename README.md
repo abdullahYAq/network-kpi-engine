@@ -100,6 +100,7 @@ N --> O[KPI Calculation - Future]
 * XML processing & class extraction: ✅ Implemented
 * Counters pipeline: ✅ Completed
 * Counter values ingestion: ✅ Implemented
+* Counters excel export for selected data: ✅ Implemented
 * KPI calculations: 🚧 In progress
 
 ---
