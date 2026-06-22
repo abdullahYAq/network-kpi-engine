@@ -10,7 +10,7 @@ def get_counter_id_counter_code_map(db_config):
             cur.execute(sql)
             codes_id_db = cur.fetchall()
             if not codes_id_db:
-                raise ValueError("No counters found in DB")
+                 return {}
             codes = [i[0] for i in codes_id_db]
 
             if len(codes) != len(set(codes)):
@@ -57,6 +57,24 @@ def get_raw_counters_values_df(db_config,counters_list,start_time,end_time,lncel
                 JOIN kpi.cells c ON cv.cell_id = c.id
                 WHERE cd.counter_code IN %s
                 AND cv.period_start_time BETWEEN %s AND %s
+                AND c.lncel IN %s
+                
+            '''
+            cur.execute(sql, (tuple(counters_list), start_time, end_time, tuple(lncel_list)))
+            counters_db = cur.fetchall()
+            values_df = pd.DataFrame(counters_db, columns=["period_start_time", "lncel","counter_name" , "counter_value"])
+
+            return values_df
+def get_daily_counters_values_df(db_config,counters_list,start_time,end_time,lncel_list):
+    with connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            sql = '''
+                SELECT cvd.period_start_time, c.lncel, cd.counter_name, cvd.counter_value
+                FROM kpi.counter_values_daily cvd
+                JOIN kpi.counters_def cd ON cvd.counter_id = cd.id
+                JOIN kpi.cells c ON cvd.cell_id = c.id
+                WHERE cd.counter_code IN %s
+                AND cvd.period_start_time BETWEEN %s AND %s
                 AND c.lncel IN %s
                 
             '''

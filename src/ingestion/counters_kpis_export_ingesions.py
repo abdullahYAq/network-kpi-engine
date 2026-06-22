@@ -1,11 +1,26 @@
-from src.cli.menu import export_level_sub_menu,export_time_custom_range,export_time_range_sub_menu,export_period_sub_menu
+from src.cli.menu import export_level_sub_menu,export_time_custom_range,export_time_range_sub_menu,export_period_sub_menu,select_names_ui
 from datetime import datetime, timedelta
-from src.db.counters_repository import get_counters_in_list, get_raw_counters_values_df, get_all_counters_codes
+from src.db.counters_repository import get_counters_in_list, get_raw_counters_values_df, get_all_counters_codes, get_daily_counters_values_df
 from src.db.cells_repository import get_cells_in_list, get_all_cells
 from src.db.kpi_def_repository import get_kpis_in_list, get_all_kpi_names_list
 from src.db.kpi_counter_values_repository import get_kpis_row_values_df
 from src.config.db_config import db_config
 import pandas as pd
+def get_counter_report_selections():
+    cells_list, counters_list = get_counters_and_cells_db()
+
+    str_cells = list(map(str, cells_list))
+    str_counters = list(map(str, counters_list))
+
+    cells_user_list = select_names_ui(str_cells, "cells")
+    if not cells_user_list:
+        return None, None
+
+    counters_user_list = select_names_ui(str_counters, "counters")
+    if not counters_user_list:
+        return None, None
+
+    return cells_user_list, counters_user_list
 def get_report_config():
     level = export_level_sub_menu() # cell level, site level
     period = export_period_sub_menu() # daily,hourly
@@ -85,33 +100,21 @@ def handle_kpis_export_ingestion(report_config,kpis_user_list,cells_user_list):
     # remove coulumn A
     pivot_df.drop(columns=["A"], inplace=True)
     return pivot_df
-    
-def handle_counters_export_ingestion(report_config,counters_user_list,cells_user_list):
+def generate_cell_counters_report(report_config,counters_user_list,cells_user_list):
     """
     compare the user selected counters with the ones in the database, if any of them is not in the database, inform the user and skip it, then get the values of the existing counters and export them to excel file
     compare the user selected cells with the ones in the database, if any of them is not in the database, inform the user and skip it, then get the values of the existing cells and export them to excel file
     """
-    existing_counters = get_counters_in_list(counters_user_list, db_config)
-    existing_cells = get_cells_in_list(cells_user_list, db_config)
-    existing_cells_str = [str(n) for n in existing_cells]
-    print(f"Existing counters in DB: {existing_counters}")
-    print(f"Existing cells in DB: {existing_cells_str}")
-    missing_counters = set(counters_user_list) - set(existing_counters)
-    missing_cells = set(cells_user_list) - set(existing_cells_str)
-    print(f"Missing counters: {missing_counters}")
-    print(f"Missing cells: {missing_cells}")
-    if not existing_cells:
-        print("No valid cells found.")
-        return
-    if not existing_counters:
-        print("No valid counters found.")
-        return
-    if missing_counters:
-        print(f"The following counters are not found in the database and will be skipped: {', '.join(missing_counters)}")
-    if missing_cells:
-        print(f"The following cells are not found in the database and will be skipped: {', '.join(missing_cells)}")
-    
-    counters_values_df = get_raw_counters_values_df(db_config, existing_counters, report_config["start_time"], report_config["end_time"], existing_cells)
+    existing_counters, existing_cells = validate_counter_report_inputs(counters_user_list, cells_user_list)
+    if not existing_counters or not existing_cells:
+        return None
+    if report_config["period"] == "daily":
+        counters_values_df = get_daily_counters_values_df(db_config, existing_counters, report_config["start_time"], report_config["end_time"], existing_cells)
+    elif report_config["period"] == "hourly":
+        counters_values_df = get_raw_counters_values_df(db_config, existing_counters, report_config["start_time"], report_config["end_time"], existing_cells)
+    return create_cell_counter_pivot(counters_values_df, report_config["period"])
+
+def create_cell_counter_pivot(counters_values_df, period):
     if counters_values_df.empty or len(counters_values_df) == 0:
         print("No data found for the selected counters and cells in the given time range.")
         return None
@@ -127,6 +130,30 @@ def handle_counters_export_ingestion(report_config,counters_user_list,cells_user
     cols = [col for col in cols if col != "index"]
     cols = ["date", "time"] + [col for col in cols if col not in ["date", "time"]]
     pivot_df = pivot_df[cols]
-    # remove coulumn A 
-    pivot_df.drop(columns=["A"], inplace=True)
+    
+    print(pivot_df.columns.tolist())
+    if period == "daily":
+        pivot_df.drop(columns=["time"], inplace=True)
     return pivot_df
+def validate_counter_report_inputs(counters_user_list, cells_user_list):
+    existing_counters = get_counters_in_list(counters_user_list, db_config)
+    existing_cells = get_cells_in_list(cells_user_list, db_config)
+    existing_cells_str = [str(n) for n in existing_cells]
+    print(f"Existing counters in DB: {existing_counters}")
+    print(f"Existing cells in DB: {existing_cells_str}")
+    missing_counters = set(counters_user_list) - set(existing_counters)
+    missing_cells = set(cells_user_list) - set(existing_cells_str)
+    print(f"Missing counters: {missing_counters}")
+    print(f"Missing cells: {missing_cells}")
+    if not existing_cells:
+        print("No valid cells found.")
+        return None, None
+    if not existing_counters:
+        print("No valid counters found.")
+        return None, None
+    if missing_counters:
+        print(f"The following counters are not found in the database and will be skipped: {', '.join(missing_counters)}")
+    if missing_cells:
+        print(f"The following cells are not found in the database and will be skipped: {', '.join(missing_cells)}")
+    
+    return existing_counters, existing_cells_str

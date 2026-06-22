@@ -1,3 +1,5 @@
+import os
+
 from src.db.kpi_counter_values_repository import insert_counter_values_to_db,insert_counter_daily_values_to_db
 from src.config.db_config import db_config
 import pandas as pd
@@ -5,6 +7,7 @@ from src.db.counters_repository import get_all_counter_codes,get_counter_id_coun
 from src.db.cells_repository import get_lncel_name_id_map,get_distname_id_map
 from src.utils.counter_code_utils import extract_counter_name_code
 import datetime
+import time
 # === LOADING ===
 def load_counter_values(csv_path):
     #csv_df = 
@@ -33,6 +36,12 @@ def map_cells_to_distname(df):
 # === TRANSFORM ===
 def rename_counter_column_to_id(counter_columns,df):
     counter_map = get_counter_id_counter_code_map(db_config)
+    if not counter_map:
+        print(
+        "\nNo counters found in counters_def table."
+        "\nPlease import counters definitions first."
+        )
+        return None
     skeped_counters = []
     id_vars = ["PERIOD_START_TIME","LNCEL name", "DN"]
     valid_counters=[]
@@ -110,4 +119,12 @@ def ingest_counters_values_daily(df):
     df_last.to_csv(csv_file_name,index=False)
     print(df_last.head())
     print(df_last.dtypes)
+    start = time.perf_counter()
+    print(csv_file_name)
+    print(f"{os.path.getsize(csv_file_name)/1024/1024:.2f} MB")
+    with open(csv_file_name, encoding="utf-8") as f:
+        rows = sum(1 for _ in f) - 1
+
+    print(f"Rows = {rows:,}")
     insert_counter_daily_values_to_db(csv_file_name,db_config)
+    print(time.perf_counter() - start)

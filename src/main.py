@@ -12,7 +12,7 @@ from src.export.kpi_template_export import create_empty_kpi_template,generate_kp
 from src.ingestion.counters_def_ingestion import detect_counters_flow, handle_counters_template_upload,filter_new_counters
 from src.ingestion.counters_value_ingestion import ingest_counters_values, ingest_counters_values_daily, rename_counter_column_to_id,load_counter_values,transform_wide_to_long,map_and_rename_column_from_dict
 from src.ingestion.kpi_def_ingestion import handle_kpi_template_upload
-from src.ingestion.counters_kpis_export_ingesions import get_report_config, handle_counters_export_ingestion, handle_kpis_export_ingestion, get_kpis_and_cells_db, get_counters_and_cells_db
+from src.ingestion.counters_kpis_export_ingesions import get_report_config, generate_cell_counters_report, handle_kpis_export_ingestion, get_kpis_and_cells_db, get_counter_report_selections
 from src.parsers.template_transformer import transform_parameters, flatten_transformed_dict,group_by_class
 from src.ingestion.kpi_def_ingestion import detect_kpi_flow
 def main():
@@ -28,7 +28,8 @@ def main():
                     counter_list,df = load_counter_values(csv_path)
                     
                     new_df = rename_counter_column_to_id(counter_list,df)
-                    
+                    if new_df is None:
+                        break
                     long_df = transform_wide_to_long(new_df)
                     
                     cleaned_mapped_df,mapped_df = map_and_rename_column_from_dict(long_df,"DN")
@@ -255,36 +256,32 @@ def main():
             elif choice_sub_menu=="Back":
                 break
         elif user_selection == "export counters and KPIs reports":
-            report_config = get_report_config()
             choice = export_selections_config()
+            report_config = get_report_config()
+            
             if choice == "Export counters report":
-                cells_list, counters_list = get_counters_and_cells_db()
-                str_cells = list(map(str, cells_list))
-                str_counters = list(map(str, counters_list))
-                cells_user_list = select_names_ui(str_cells, "cells")
-                print(cells_user_list)
+                cells_user_list, counters_user_list = get_counter_report_selections()
+                
                 if not cells_user_list:
                     print("No cells selected. Exiting.")
                     continue
-                counters_user_list = select_names_ui(str_counters, "counters")
-                print(counters_user_list)
                 if not counters_user_list:
                     print("No counters selected. Exiting.")
                     continue
                 print(f"User selected counters: {counters_user_list}")
-                print(f"User selected cells: {cells_user_list}")    
-                counter_pivot = handle_counters_export_ingestion(report_config,counters_user_list,cells_user_list)
-                #print(counter_pivot)
-                if counter_pivot is None or counter_pivot.empty:
-                    print("No data to export.")
+                print(f"User selected cells: {cells_user_list}") 
+                if report_config["level"] == "cell level":   
+                    counter_pivot = generate_cell_counters_report(report_config,counters_user_list,cells_user_list)
+                    if counter_pivot is None or counter_pivot.empty:
+                        print("No data to export.")
+                        continue
+                    excel_path = choose_excel_save_path()
+                    if not excel_path:
+                        print("No excel file selected!")
+                        continue
+                    counter_pivot.to_excel(excel_path, index=False)
+                    open_file(excel_path)
                     continue
-                excel_path = choose_excel_save_path()
-                if not excel_path:
-                    print("No excel file selected!")
-                    continue
-                counter_pivot.to_excel(excel_path)
-                open_file(excel_path)
-                continue
             elif choice == "Export KPIs report":
                 cells_list, kpis_list = get_kpis_and_cells_db()
                 str_cells = list(map(str, cells_list))
