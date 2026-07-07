@@ -34,3 +34,18 @@ def get_tech_from_db(db_config):
     except Exception as e:
         print(f"Error getting technology: {e}")
         return None
+def get_technology_list(db_config):
+    try:
+        with connect(**db_config) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT tech_name
+                    FROM kpi.technology
+                    ORDER BY tech_name
+                """)
+
+                return [row[0] for row in cur.fetchall()]
+
+    except Exception as e:
+        print(f"Error getting technology: {e}")
+        return []
