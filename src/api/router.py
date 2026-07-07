@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from .health import router as health_router
-from .technologies import router as technologies_router
+from .endpoints.health import router as health_router
+from .endpoints.technologies import router as technologies_router
 
 router = APIRouter()
 
